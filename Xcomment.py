@@ -20,7 +20,7 @@ def interact_with_post(driver, post_url, comment_text):
         driver.get(post_url)
         print(f"Navigated to the post URL: {post_url}")
 
-        time.sleep(5)  # Give time for the post to load
+        time.sleep(3)  # Give time for the post to load
 
         # Comment on the post
         try:
@@ -30,6 +30,7 @@ def interact_with_post(driver, post_url, comment_text):
             print("Comment typed")
         except Exception as e:
             print("Error finding comment box: ", e)
+            time.sleep(1)
 
         # Post the comment
         try:
@@ -65,6 +66,7 @@ def interact_with_post(driver, post_url, comment_text):
             print("Post retweeted.")
         except Exception as e:
             print("Error during retweeting: ", e)
+            time.sleep(2)
 
     except Exception as e:
         print(f"An error occurred while interacting with the post: {e}")
@@ -73,7 +75,7 @@ def interact_with_post(driver, post_url, comment_text):
 def main(cookie_files, post_url):
     driver = webdriver.Chrome()
     try:
-        comment_text = "sad"
+        comment_text = "hlo"
         for cookie_file in cookie_files:
             print(f"\nUsing cookies from: {cookie_file}")
             driver.get('https://twitter.com/login')
@@ -87,6 +89,7 @@ def main(cookie_files, post_url):
             # Clear cookies 
             driver.delete_all_cookies()
             print("Cookies cleared for the next account.")
+            time.sleep(2)
 
     except Exception as e:
         print(f"An error occurred in the main function: {e}")
@@ -95,9 +98,9 @@ def main(cookie_files, post_url):
 # Example usage:
 cookie_files = [
     'twitter_cookies.json', 
-    # 'twitter_cookies2.json', 
-    # 'twitter_cookies3.json'
+    'twitter_cookies2.json', 
+    'twitter_cookies3.json'
 ]
-post_url = 'https://twitter.com/peepoye_/status/1842170325519278473'  
+post_url = 'https://x.com/ManUtdMEN/status/1848312452280140240'  
 
 main(cookie_files, post_url)
