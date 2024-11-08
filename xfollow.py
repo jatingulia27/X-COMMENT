@@ -1,4 +1,5 @@
 import json
+import time
 import logging
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -6,17 +7,20 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-# Set up logging
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger()
 
-# Function to load cookies from a specified file and add them to the browser session
+
 def load_cookies_from_file(driver, cookie_file_path):
     try:
         with open(cookie_file_path, 'r') as cookie_file:
-            cookies = json.load(cookie_file)
-            for cookie in cookies:
-                driver.add_cookie(cookie)
+            all_cookies = json.load(cookie_file)
+            for cookies in all_cookies:
+                for cookie in cookies:
+                    driver.add_cookie(cookie)
+                yield cookies  
+                driver.delete_all_cookies()  
         logger.info(f"Cookies loaded from {cookie_file_path}")
     except FileNotFoundError:
         logger.error(f"Cookie file not found: {cookie_file_path}")
@@ -42,43 +46,32 @@ def follow_account(driver, account_url):
     except Exception as e:
         logger.error(f"An error occurred while trying to follow the account: {e}")
 
-# Main function to initialize the WebDriver, load cookies, and follow an account
-def main(cookie_files, account_url):
-    # Set Chrome options for headless mode
+
+def main(cookie_file_path, account_url):
+
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run in headless mode
-    chrome_options.add_argument("--disable-gpu")  # Disable GPU (optional for headless)
-    chrome_options.add_argument("--no-sandbox")  # Avoid sandboxing in headless mode
+    chrome_options.add_argument("--headless")  
+    chrome_options.add_argument("--disable-gpu")  
+    chrome_options.add_argument("--no-sandbox")  
 
     # Initialize WebDriver with Chrome options
     driver = webdriver.Chrome(options=chrome_options)
 
     try:
-        # Loop through each set of cookies and attempt to follow the account
-        for cookie_file in cookie_files:
-            logger.info(f"Using cookies from: {cookie_file}")
-            driver.get('https://twitter.com/login')  # Visit the login page first to set cookies
-            load_cookies_from_file(driver, cookie_file)  # Load cookies
-            driver.refresh()  # Refresh the page to apply cookies
+        driver.get('https://twitter.com/login')
 
-            # Attempt to follow the account
+        for cookies in load_cookies_from_file(driver, cookie_file_path):
+            driver.refresh() 
             follow_account(driver, account_url)
-
-            # Clear cookies for the next account
-            driver.delete_all_cookies()
-            logger.info("Cookies cleared for the next account.")
             time.sleep(2)
 
     except Exception as e:
         logger.error(f"An error occurred in the main function: {e}")
     finally:
-        driver.quit()  # Ensure the driver is closed after the process
+        driver.quit()  
 
-# Example usage:
-cookie_files = [
-    'twitter_cookies22.json',  # Replace with actual cookie file paths
-    # Add more cookie file paths as needed
-]
-account_url = 'https://x.com/GOP'  # Replace with the actual account URL to follow
+# Example usage
+cookie_file_path = 'cookies_list.json'  
+account_url = 'https://x.com/GOP'  
 
-main(cookie_files, account_url)
+main(cookie_file_path, account_url)
